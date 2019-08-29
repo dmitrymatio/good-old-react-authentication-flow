@@ -1,7 +1,6 @@
 The previous article explained how to build an Authentication flow using React and classes.
 
-With the release of React 16.8 and the Hooks Api, the authentication is even easier to develop, so I thought that I should rewrite
-this article, using only hooks and also adding some improvements like form validations file upload with Strapi (you should definitely read the article to know more...).
+With the release of React 16.8 and the Hooks Api, the authentication is even easier to develop, so I thought that I should rewritethis article, using only hooks and also adding some improvements like form validations with Strapi.
 
 So before digging into some practical code we are going to set up a Strapi API so we will use JSON Web Tokens for our authentication, we'll also create some content type and use the new group feature and we'll cover the file upload part
 which have been made way easier for developers.
