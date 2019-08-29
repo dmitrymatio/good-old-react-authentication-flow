@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState, memo } from 'react';
+import React, { useEffect, useState, memo } from 'react';
 import PropTypes from 'prop-types';
 import { get, set } from 'lodash';
 import { Link, Redirect } from 'react-router-dom';
@@ -18,22 +18,11 @@ const AuthPage = ({
   },
 }) => {
   const [state, setState] = useState({});
-  const searchRef = useRef();
-  searchRef.current = search;
-
+  const [errors, setErrors] = useState({});
+  // Reset the state on navigation
   useEffect(() => {
-    if (searchRef.current !== '') {
-      const code = getQueryParameters(searchRef.current, 'code');
-
-      setState({ code });
-
-      return;
-    }
-
     setState({});
   }, [authType]);
-
-  const [errors, setErrors] = useState({});
   const handleChange = ({ target: { name, value } }) =>
     setState(prevState => ({ ...prevState, [name]: value }));
 
@@ -41,17 +30,22 @@ const AuthPage = ({
   const handleSubmit = async e => {
     e.preventDefault();
     let errors = {};
+    const body = state;
+    const code = getQueryParameters(search, 'code');
+
+    if (authType === 'reset-password' && code !== null) {
+      set(body, 'code', code);
+    }
+
+    if (authType === 'forgot-password') {
+      set(body, 'url', `${window.location.origin}/auth/reset-password`);
+    }
 
     try {
-      await schema.validate(state, { abortEarly: false });
-      let body = state;
-      const { REACT_APP_BACK_END_URL, REACT_APP_FRONT_END_URL } = process.env;
-      // delete body.confirmPassword;
-      delete body.rememberMe;
+      await schema.validate(body, { abortEarly: false });
+      const { REACT_APP_BACK_END_URL } = process.env;
 
-      if (authType === 'forgot-password') {
-        set(body, 'url', `${REACT_APP_FRONT_END_URL}/auth/reset-password`);
-      }
+      delete body.rememberMe;
 
       try {
         const response = await request(`${REACT_APP_BACK_END_URL}${endPoint}`, {
@@ -118,17 +112,15 @@ const AuthPage = ({
             </Button>
           </div>
           <div>
-            {authType !== 'register' && (
-              <div>
-                {authType !== 'forgot-password' && (
-                  <>
-                    <Link to="/auth/forgot-password">Forgot Password</Link>
-                    &nbsp;or&nbsp;
-                  </>
-                )}
-                <Link to={`/auth/${authLink}`}>{authLink}</Link>
-              </div>
-            )}
+            <div>
+              {authType !== 'forgot-password' && (
+                <>
+                  <Link to="/auth/forgot-password">Forgot Password</Link>
+                  &nbsp;or&nbsp;
+                </>
+              )}
+              <Link to={`/auth/${authLink}`}>{authLink}</Link>
+            </div>
           </div>
         </div>
       </form>
